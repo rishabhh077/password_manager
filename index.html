@@ -1,0 +1,1104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Password Manager</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #141e30, #243b55);
+            min-height: 100vh;
+            color: white;
+            padding: 30px 15px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: auto;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        h2 {
+            margin-bottom: 20px;
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 7px;
+            font-weight: bold;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-size: 15px;
+            outline: none;
+        }
+
+        button {
+            border: none;
+            padding: 11px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            margin: 5px 3px;
+            transition: 0.2s;
+        }
+
+        button:hover {
+            transform: translateY(-1px);
+            opacity: 0.9;
+        }
+
+        .primary {
+            background: #00c853;
+            color: white;
+        }
+
+        .danger {
+            background: #ff1744;
+            color: white;
+        }
+
+        .secondary {
+            background: #2196f3;
+            color: white;
+        }
+
+        .gray {
+            background: #777;
+            color: white;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .message {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 8px;
+            display: none;
+        }
+
+        .success {
+            background: rgba(0, 200, 83, 0.3);
+        }
+
+        .error {
+            background: rgba(255, 23, 68, 0.3);
+        }
+
+        .credential {
+            background: rgba(0, 0, 0, 0.25);
+            padding: 18px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+        }
+
+        .credential h3 {
+            margin-bottom: 10px;
+            color: #64b5f6;
+        }
+
+        .credential p {
+            margin: 8px 0;
+            word-break: break-word;
+        }
+
+        .password {
+            font-family: monospace;
+        }
+
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .empty {
+            text-align: center;
+            color: #ccc;
+            padding: 20px;
+        }
+
+        .strength {
+            margin-top: 5px;
+            font-size: 13px;
+        }
+
+        @media (max-width: 600px) {
+            body {
+                padding: 15px 10px;
+            }
+
+            .card {
+                padding: 18px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <h1>🔐 Password Manager</h1>
+
+    <!-- LOGIN / CREATE VAULT -->
+    <div id="authSection" class="card">
+
+        <h2 id="authTitle">Create Password Vault</h2>
+
+        <div class="input-group">
+            <label for="masterPassword">Master Password</label>
+
+            <input
+                type="password"
+                id="masterPassword"
+                placeholder="Enter master password"
+                autocomplete="off"
+            >
+        </div>
+
+        <div id="confirmGroup" class="input-group">
+            <label for="confirmPassword">Confirm Master Password</label>
+
+            <input
+                type="password"
+                id="confirmPassword"
+                placeholder="Confirm master password"
+                autocomplete="off"
+            >
+        </div>
+
+        <button
+            id="authButton"
+            class="primary"
+            onclick="authenticate()">
+            Create Vault
+        </button>
+
+        <div id="authMessage" class="message"></div>
+
+    </div>
+
+
+    <!-- MAIN APPLICATION -->
+    <div id="appSection" class="hidden">
+
+        <!-- ADD CREDENTIAL -->
+        <div class="card">
+
+            <div class="top-bar">
+                <h2>Add Credential</h2>
+
+                <button
+                    class="danger"
+                    onclick="lockVault()">
+                    🔒 Lock Vault
+                </button>
+            </div>
+
+            <div class="input-group">
+                <label for="website">Website / App</label>
+
+                <input
+                    type="text"
+                    id="website"
+                    placeholder="e.g. GitHub"
+                >
+            </div>
+
+            <div class="input-group">
+                <label for="username">Username / Email</label>
+
+                <input
+                    type="text"
+                    id="username"
+                    placeholder="username@example.com"
+                >
+            </div>
+
+            <div class="input-group">
+                <label for="password">Password</label>
+
+                <input
+                    type="password"
+                    id="password"
+                    placeholder="Enter password"
+                >
+
+                <div id="strength" class="strength"></div>
+            </div>
+
+            <button
+                class="secondary"
+                onclick="generatePassword()">
+                Generate Password
+            </button>
+
+            <button
+                class="primary"
+                onclick="addCredential()">
+                ➕ Add Credential
+            </button>
+
+        </div>
+
+
+        <!-- CREDENTIAL LIST -->
+        <div class="card">
+
+            <h2>Saved Credentials</h2>
+
+            <div id="credentialsList"></div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<script>
+
+    /*
+     * Password Manager
+     *
+     * Encryption:
+     * AES-GCM 256-bit
+     *
+     * Key derivation:
+     * PBKDF2 + SHA-256
+     *
+     * Storage:
+     * localStorage
+     */
+
+    const STORAGE_KEY = "secure_password_vault";
+
+    let encryptionKey = null;
+    let credentials = [];
+
+
+    /*
+     * Convert ArrayBuffer to Base64
+     */
+    function bufferToBase64(buffer) {
+
+        const bytes = new Uint8Array(buffer);
+
+        let binary = "";
+
+        for (let byte of bytes) {
+            binary += String.fromCharCode(byte);
+        }
+
+        return btoa(binary);
+    }
+
+
+    /*
+     * Convert Base64 to Uint8Array
+     */
+    function base64ToBuffer(base64) {
+
+        const binary = atob(base64);
+
+        const bytes = new Uint8Array(binary.length);
+
+        for (let i = 0; i < binary.length; i++) {
+            bytes[i] = binary.charCodeAt(i);
+        }
+
+        return bytes;
+    }
+
+
+    /*
+     * Generate random bytes
+     */
+    function randomBytes(length) {
+
+        const bytes = new Uint8Array(length);
+
+        crypto.getRandomValues(bytes);
+
+        return bytes;
+    }
+
+
+    /*
+     * Derive encryption key from master password
+     */
+    async function deriveKey(password, salt) {
+
+        const encoder = new TextEncoder();
+
+        const passwordKey = await crypto.subtle.importKey(
+            "raw",
+            encoder.encode(password),
+            "PBKDF2",
+            false,
+            ["deriveKey"]
+        );
+
+        return crypto.subtle.deriveKey(
+            {
+                name: "PBKDF2",
+                salt: salt,
+                iterations: 600000,
+                hash: "SHA-256"
+            },
+            passwordKey,
+            {
+                name: "AES-GCM",
+                length: 256
+            },
+            false,
+            ["encrypt", "decrypt"]
+        );
+    }
+
+
+    /*
+     * Encrypt data
+     */
+    async function encryptData(data, key) {
+
+        const encoder = new TextEncoder();
+
+        const iv = randomBytes(12);
+
+        const encrypted = await crypto.subtle.encrypt(
+            {
+                name: "AES-GCM",
+                iv: iv
+            },
+            key,
+            encoder.encode(JSON.stringify(data))
+        );
+
+        return {
+            iv: bufferToBase64(iv),
+            data: bufferToBase64(encrypted)
+        };
+    }
+
+
+    /*
+     * Decrypt data
+     */
+    async function decryptData(encryptedData, key) {
+
+        const iv = base64ToBuffer(encryptedData.iv);
+
+        const encrypted = base64ToBuffer(encryptedData.data);
+
+        const decrypted = await crypto.subtle.decrypt(
+            {
+                name: "AES-GCM",
+                iv: iv
+            },
+            key,
+            encrypted
+        );
+
+        const decoder = new TextDecoder();
+
+        return JSON.parse(
+            decoder.decode(decrypted)
+        );
+    }
+
+
+    /*
+     * Show authentication message
+     */
+    function showAuthMessage(message, type) {
+
+        const element = document.getElementById("authMessage");
+
+        element.textContent = message;
+
+        element.className = "message " + type;
+
+        element.style.display = "block";
+    }
+
+
+    /*
+     * Check if vault exists
+     */
+    function vaultExists() {
+
+        return localStorage.getItem(STORAGE_KEY) !== null;
+    }
+
+
+    /*
+     * Create or login
+     */
+    async function authenticate() {
+
+        const password =
+            document.getElementById("masterPassword").value;
+
+        const confirm =
+            document.getElementById("confirmPassword").value;
+
+
+        if (!password) {
+
+            showAuthMessage(
+                "Please enter a master password.",
+                "error"
+            );
+
+            return;
+        }
+
+
+        /*
+         * Creating new vault
+         */
+        if (!vaultExists()) {
+
+            if (password.length < 8) {
+
+                showAuthMessage(
+                    "Master password must be at least 8 characters.",
+                    "error"
+                );
+
+                return;
+            }
+
+
+            if (password !== confirm) {
+
+                showAuthMessage(
+                    "Master passwords do not match.",
+                    "error"
+                );
+
+                return;
+            }
+
+
+            const salt = randomBytes(16);
+
+            encryptionKey =
+                await deriveKey(password, salt);
+
+
+            credentials = [];
+
+
+            const encrypted =
+                await encryptData(
+                    credentials,
+                    encryptionKey
+                );
+
+
+            const vault = {
+
+                version: 1,
+
+                salt: bufferToBase64(salt),
+
+                iv: encrypted.iv,
+
+                data: encrypted.data
+
+            };
+
+
+            localStorage.setItem(
+                STORAGE_KEY,
+                JSON.stringify(vault)
+            );
+
+
+            showApp();
+
+            return;
+        }
+
+
+        /*
+         * Login existing vault
+         */
+
+        try {
+
+            const vault =
+                JSON.parse(
+                    localStorage.getItem(STORAGE_KEY)
+                );
+
+
+            const salt =
+                base64ToBuffer(vault.salt);
+
+
+            encryptionKey =
+                await deriveKey(password, salt);
+
+
+            credentials =
+                await decryptData(
+                    {
+                        iv: vault.iv,
+                        data: vault.data
+                    },
+                    encryptionKey
+                );
+
+
+            showApp();
+
+        } catch (error) {
+
+            encryptionKey = null;
+
+            showAuthMessage(
+                "Incorrect master password.",
+                "error"
+            );
+
+        }
+
+    }
+
+
+    /*
+     * Display application
+     */
+    function showApp() {
+
+        document
+            .getElementById("authSection")
+            .classList.add("hidden");
+
+        document
+            .getElementById("appSection")
+            .classList.remove("hidden");
+
+        document
+            .getElementById("masterPassword")
+            .value = "";
+
+        document
+            .getElementById("confirmPassword")
+            .value = "";
+
+        renderCredentials();
+
+    }
+
+
+    /*
+     * Save encrypted vault
+     */
+    async function saveVault() {
+
+        const vault =
+            JSON.parse(
+                localStorage.getItem(STORAGE_KEY)
+            );
+
+
+        const encrypted =
+            await encryptData(
+                credentials,
+                encryptionKey
+            );
+
+
+        vault.iv = encrypted.iv;
+
+        vault.data = encrypted.data;
+
+
+        localStorage.setItem(
+            STORAGE_KEY,
+            JSON.stringify(vault)
+        );
+
+    }
+
+
+    /*
+     * Add credential
+     */
+    async function addCredential() {
+
+        const website =
+            document.getElementById("website").value.trim();
+
+        const username =
+            document.getElementById("username").value.trim();
+
+        const password =
+            document.getElementById("password").value;
+
+
+        if (!website || !username || !password) {
+
+            alert("Please fill in all fields.");
+
+            return;
+        }
+
+
+        credentials.push({
+
+            id: crypto.randomUUID(),
+
+            website: website,
+
+            username: username,
+
+            password: password
+
+        });
+
+
+        await saveVault();
+
+
+        document.getElementById("website").value = "";
+
+        document.getElementById("username").value = "";
+
+        document.getElementById("password").value = "";
+
+        document.getElementById("strength").textContent = "";
+
+
+        renderCredentials();
+
+        alert("Credential saved securely.");
+
+    }
+
+
+    /*
+     * Render credentials
+     */
+    function renderCredentials() {
+
+        const list =
+            document.getElementById("credentialsList");
+
+
+        list.innerHTML = "";
+
+
+        if (credentials.length === 0) {
+
+            list.innerHTML =
+                '<div class="empty">No credentials saved.</div>';
+
+            return;
+
+        }
+
+
+        credentials.forEach((credential, index) => {
+
+            const div =
+                document.createElement("div");
+
+
+            div.className = "credential";
+
+
+            div.innerHTML = `
+
+                <h3>🌐 ${escapeHTML(credential.website)}</h3>
+
+                <p>
+                    <strong>Username:</strong>
+                    <span>${escapeHTML(credential.username)}</span>
+
+                    <button
+                        class="secondary"
+                        onclick="copyText('${escapeAttribute(credential.username)}')">
+                        Copy
+                    </button>
+                </p>
+
+                <p>
+                    <strong>Password:</strong>
+
+                    <span
+                        id="password-${index}"
+                        class="password">
+                        ••••••••••
+                    </span>
+
+                    <button
+                        class="gray"
+                        onclick="togglePassword(${index})">
+                        👁️ Show
+                    </button>
+
+                    <button
+                        class="secondary"
+                        onclick="copyText('${escapeAttribute(credential.password)}')">
+                        Copy
+                    </button>
+                </p>
+
+                <button
+                    class="danger"
+                    onclick="deleteCredential(${index})">
+                    🗑️ Delete
+                </button>
+
+            `;
+
+
+            list.appendChild(div);
+
+        });
+
+    }
+
+
+    /*
+     * Show / hide password
+     */
+    function togglePassword(index) {
+
+        const element =
+            document.getElementById(
+                "password-" + index
+            );
+
+
+        if (element.textContent === "••••••••••") {
+
+            element.textContent =
+                credentials[index].password;
+
+        } else {
+
+            element.textContent =
+                "••••••••••";
+
+        }
+
+    }
+
+
+    /*
+     * Delete credential
+     */
+    async function deleteCredential(index) {
+
+        const credential =
+            credentials[index];
+
+
+        const confirmed =
+            confirm(
+                `Delete credential for ${credential.website}?`
+            );
+
+
+        if (!confirmed) {
+            return;
+        }
+
+
+        credentials.splice(index, 1);
+
+
+        await saveVault();
+
+
+        renderCredentials();
+
+    }
+
+
+    /*
+     * Copy text
+     */
+    async function copyText(text) {
+
+        try {
+
+            await navigator.clipboard.writeText(text);
+
+            alert("Copied to clipboard.");
+
+        } catch (error) {
+
+            alert("Unable to copy.");
+
+        }
+
+    }
+
+
+    /*
+     * Generate random password
+     */
+    function generatePassword() {
+
+        const characters =
+            "ABCDEFGHIJKLMNOPQRSTUVWXYZ" +
+            "abcdefghijklmnopqrstuvwxyz" +
+            "0123456789" +
+            "!@#$%^&*()_+-=[]{}";
+
+
+        const length = 16;
+
+        let password = "";
+
+
+        const randomValues =
+            new Uint32Array(length);
+
+        crypto.getRandomValues(randomValues);
+
+
+        for (let i = 0; i < length; i++) {
+
+            password +=
+                characters[
+                    randomValues[i] %
+                    characters.length
+                ];
+
+        }
+
+
+        document.getElementById("password").value =
+            password;
+
+
+        updateStrength();
+
+    }
+
+
+    /*
+     * Password strength
+     */
+    function updateStrength() {
+
+        const password =
+            document.getElementById("password").value;
+
+
+        const strength =
+            document.getElementById("strength");
+
+
+        if (!password) {
+
+            strength.textContent = "";
+
+            return;
+
+        }
+
+
+        let score = 0;
+
+
+        if (password.length >= 8) {
+            score++;
+        }
+
+        if (password.length >= 12) {
+            score++;
+        }
+
+        if (/[A-Z]/.test(password)) {
+            score++;
+        }
+
+        if (/[a-z]/.test(password)) {
+            score++;
+        }
+
+        if (/[0-9]/.test(password)) {
+            score++;
+        }
+
+        if (/[^A-Za-z0-9]/.test(password)) {
+            score++;
+        }
+
+
+        if (score <= 2) {
+
+            strength.textContent =
+                "🔴 Weak password";
+
+        } else if (score <= 4) {
+
+            strength.textContent =
+                "🟡 Medium password";
+
+        } else {
+
+            strength.textContent =
+                "🟢 Strong password";
+
+        }
+
+    }
+
+
+    document
+        .getElementById("password")
+        .addEventListener(
+            "input",
+            updateStrength
+        );
+
+
+    /*
+     * Lock vault
+     */
+    function lockVault() {
+
+        encryptionKey = null;
+
+        credentials = [];
+
+
+        document
+            .getElementById("appSection")
+            .classList.add("hidden");
+
+
+        document
+            .getElementById("authSection")
+            .classList.remove("hidden");
+
+
+        /*
+         * Existing vault -> login mode
+         */
+        document
+            .getElementById("authTitle")
+            .textContent = "Unlock Password Vault";
+
+
+        document
+            .getElementById("authButton")
+            .textContent = "Unlock Vault";
+
+
+        document
+            .getElementById("confirmGroup")
+            .classList.add("hidden");
+
+
+        document
+            .getElementById("masterPassword")
+            .value = "";
+
+    }
+
+
+    /*
+     * Escape HTML
+     */
+    function escapeHTML(value) {
+
+        return value
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+
+    }
+
+
+    /*
+     * Escape values used inside attributes
+     */
+    function escapeAttribute(value) {
+
+        return value
+            .replace(/\\/g, "\\\\")
+            .replace(/'/g, "\\'");
+
+    }
+
+
+    /*
+     * Initialize page
+     */
+    window.addEventListener("DOMContentLoaded", function () {
+
+        if (vaultExists()) {
+
+            document
+                .getElementById("authTitle")
+                .textContent =
+                "Unlock Password Vault";
+
+
+            document
+                .getElementById("authButton")
+                .textContent =
+                "Unlock Vault";
+
+
+            document
+                .getElementById("confirmGroup")
+                .classList.add("hidden");
+
+        }
+
+    });
+
+</script>
+
+</body>
+</html>
