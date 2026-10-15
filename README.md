@@ -5,7 +5,7 @@ A secure, client-side password manager that runs entirely in your browser. All c
 ## ✨ Features
 
 - **Strong encryption:** AES-256-GCM, with the key derived from your master password using PBKDF2-SHA256 (600,000 iterations)
-- **Local only:** the encrypted vault is stored in your browser's `localStorage`
+- **Local only:** the encrypted vault is stored in your browser's `localStage`
 - **Animated vault door:** unlock animation, plus a shake-and-glow warning on a wrong password
 - **Account recovery:** a recovery key, shown once when you create the vault, lets you set a new master password if you forget it
 - **Reset vault:** start over with an empty vault when neither the password nor the recovery key is available
