@@ -1,6 +1,6 @@
 # 🔐 Password Vault
 
-A secure, client-side password manager that runs entirely in your browser. All credentials are encrypted with your master password and stored locally, so nothing is ever sent to a server.
+A secure, client-side password manager that runs entirely in yr browser. All credentials are encrypted with your master password and stored locally, so nothing is ever sent to a server.
 
 ## ✨ Features
 
